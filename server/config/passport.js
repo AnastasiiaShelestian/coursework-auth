@@ -41,3 +41,45 @@ passport.use(
 passport.deserializeUser((data, done) => {
   done(null, data);
 });
+
+const GitHubStrategy = require("passport-github2").Strategy;
+
+passport.use(
+  new GitHubStrategy(
+    {
+      clientID: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: "/api/auth/github/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email =
+          profile.emails?.[0]?.value || `${profile.username}@github.com`;
+        let user = await User.findOne({ email });
+
+        if (!user) {
+          user = await User.create({
+            name: profile.displayName || profile.username,
+            email,
+            password: "",
+            github: true,
+          });
+        }
+
+        const token = jwt.sign(
+          {
+            userId: user._id,
+            email: user.email,
+            name: user.name,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "1h" }
+        );
+
+        done(null, { token, user });
+      } catch (err) {
+        done(err, null);
+      }
+    }
+  )
+);

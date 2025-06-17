@@ -30,15 +30,21 @@ function Login() {
         }
       );
 
-      const { token, user } = response.data;
+      const { token, user, twoFactor } = response.data;
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      navigate("/profile");
+      if (twoFactor) {
+        // Сохраняем временный токен, переход на верификацию 2FA
+        localStorage.setItem("tempToken", token);
+        navigate("/verify-2fa");
+      } else {
+        // Обычный вход
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        navigate("/profile");
+      }
     } catch (err) {
       console.error(err);
-      setError("Неверный email или пароль");
+      setError(err.response?.data?.message || "Неверный email или пароль");
     }
   };
 
@@ -50,7 +56,8 @@ function Login() {
         backgroundImage:
           "url(https://u-stena.ru/upload/iblock/5ea/5ea640f9c5cadfed58a52a6d53d2e142.jpg)",
         backgroundRepeat: "no-repeat",
-        backgroundPosition: "centr",
+        backgroundPosition: "center",
+        backgroundSize: "cover",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -60,7 +67,6 @@ function Login() {
         sx={{
           height: 500,
           width: 400,
-          marginTop: 5,
           borderRadius: 4,
           display: "flex",
           flexDirection: "column",
@@ -68,18 +74,18 @@ function Login() {
           alignItems: "center",
           boxShadow: 5,
           background:
-            "linear-gradient(135deg, rgba(26, 62, 34, 0.6) 0%, rgba(33, 94, 64, 0.6) 100%)",
+            "linear-gradient(135deg, rgba(26, 62, 34, 0.7) 0%, rgba(33, 94, 64, 0.7) 100%)",
           backdropFilter: "blur(7px)",
-          WebkitBackdropFilter: "blur(7px)",
+          padding: 3,
         }}
       >
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ width: "100%" }}>
           <Box
             display="flex"
             flexDirection="column"
             alignItems="center"
             gap={2}
-            sx={{ width: "80%", margin: "0 auto ", mt: 0 }}
+            sx={{ width: "100%" }}
           >
             <Typography variant="h5" sx={{ color: "#fff", fontWeight: "bold" }}>
               Авторизация
@@ -101,13 +107,82 @@ function Login() {
             <Button variant="contained" color="primary" type="submit">
               Войти
             </Button>
-            <a href="http://localhost:5000/api/auth/google">
-              <Button variant="contained" color="primary">
-                Войти через Google
-              </Button>
-            </a>
 
-            <Typography variant="body3" sx={{ color: "#dad7cd" }}>
+            <Box
+              sx={{
+                my: 2,
+                display: "flex",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <Box sx={{ flex: 1, height: "1px", backgroundColor: "#ccc" }} />
+              <Typography
+                variant="body2"
+                sx={{
+                  mx: 2,
+                  color: "#fff",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                или войти через
+              </Typography>
+              <Box sx={{ flex: 1, height: "1px", backgroundColor: "#ccc" }} />
+            </Box>
+
+            <Box
+              sx={{
+                mt: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 2,
+              }}
+            >
+              <a href="http://localhost:5000/api/auth/google">
+                <img
+                  src="/images/Google.png"
+                  alt="Войти через Google"
+                  style={{
+                    width: "50px",
+                    height: "auto",
+                    cursor: "pointer",
+                    borderRadius: "6px",
+                    boxShadow: "0 2px 5px rgba(0,0,0,0.12)",
+                    transition: "transform 0.2s ease",
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.transform = "scale(1.05)")
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.transform = "scale(1)")
+                  }
+                />
+              </a>
+
+              <a href="http://localhost:5000/api/auth/github">
+                <img
+                  src="/images/GitHub.png"
+                  alt="Войти через GitHub"
+                  style={{
+                    width: "50px",
+                    height: "auto",
+                    cursor: "pointer",
+                    borderRadius: "6px",
+                    boxShadow: "0 2px 5px rgba(0,0,0,0.12)",
+                    transition: "transform 0.2s ease",
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.transform = "scale(1.05)")
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.transform = "scale(1)")
+                  }
+                />
+              </a>
+            </Box>
+
+            <Typography variant="body2" sx={{ color: "#dad7cd", mt: 2 }}>
               Нет аккаунта?{" "}
               <Link component="button" onClick={() => navigate("/register")}>
                 Зарегистрироваться

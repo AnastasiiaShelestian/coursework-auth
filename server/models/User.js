@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: function () {
-        return !this.google;
+        return !this.google && !this.github;
       },
       default: "",
     },
@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    github: {
+      type: Boolean,
+      default: false,
+    },
+    twoFactorEnabled: { type: Boolean, default: false },
+    twoFactorSecret: { type: String },
   },
   {
     timestamps: true,
