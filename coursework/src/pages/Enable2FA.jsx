@@ -6,26 +6,20 @@ import {
   Typography,
   CircularProgress,
 } from "@mui/material";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 
 const Enable2FA = ({ onSuccess }) => {
   const [qrCode, setQrCode] = useState("");
   const [code, setCode] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1); // 1 — кнопка, 2 — отображение QR
+  const [step, setStep] = useState(1);
 
   const fetchQRCode = async () => {
     setLoading(true);
     setStatus("");
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        "http://localhost:5000/api/auth/generate-2fa",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await axiosInstance.get("/auth/generate-2fa");
       setQrCode(res.data.qrCode);
       setStep(2);
     } catch (error) {
@@ -39,14 +33,7 @@ const Enable2FA = ({ onSuccess }) => {
   const handleEnable = async () => {
     setStatus("");
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:5000/api/auth/enable-2fa",
-        { code },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await axiosInstance.post("/auth/enable-2fa", { code });
       setStatus("✅ Двухфакторная аутентификация включена");
       if (onSuccess) onSuccess();
     } catch (error) {

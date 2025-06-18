@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { Container, Button, TextField, Typography, Box } from "@mui/material";
 
@@ -27,18 +27,18 @@ function Registration() {
     setError("");
     setSuccess("");
 
-    try {
-      // Регистрация
-      await axios.post("http://localhost:5000/api/auth/register", formData);
+    if (!formData.name || !formData.email || !formData.password) {
+      setError("Пожалуйста, заполните все поля");
+      return;
+    }
 
-      // Автоматический вход
-      const loginResponse = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        {
-          email: formData.email,
-          password: formData.password,
-        }
-      );
+    try {
+      await axiosInstance.post("/auth/register", formData);
+
+      const loginResponse = await axiosInstance.post("/auth/login", {
+        email: formData.email,
+        password: formData.password,
+      });
 
       const { token, user } = loginResponse.data;
       localStorage.setItem("token", token);

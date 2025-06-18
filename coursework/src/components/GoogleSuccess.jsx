@@ -11,6 +11,12 @@ function GoogleSuccess() {
     const name = query.get("name");
     const email = query.get("email");
 
+    if (!token) {
+      alert("Ошибка авторизации через Google.");
+      navigate("/");
+      return;
+    }
+
     if (token) {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify({ name, email }));

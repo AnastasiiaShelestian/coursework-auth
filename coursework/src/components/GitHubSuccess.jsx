@@ -11,6 +11,12 @@ function GitHubSuccess() {
     const name = query.get("name");
     const email = query.get("email");
 
+    if (!token) {
+      alert("Ошибка авторизации через GitHub.");
+      navigate("/");
+      return;
+    }
+
     if (token) {
       localStorage.setItem("token", token);
       localStorage.setItem(
@@ -18,12 +24,12 @@ function GitHubSuccess() {
         JSON.stringify({
           name,
           email,
-          github: true, // 💡 для отображения в профиле
+          github: true,
         })
       );
       navigate("/profile");
     } else {
-      navigate("/login");
+      navigate("/");
     }
   }, [location, navigate]);
 

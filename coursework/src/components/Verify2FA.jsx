@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { Box, TextField, Button, Typography, Container } from "@mui/material";
 
@@ -11,11 +11,17 @@ const Verify2FA = () => {
 
   const handleVerify = async () => {
     setError("");
+
+    if (!code.trim()) {
+      setError("Пожалуйста, введите код");
+      return;
+    }
+
     try {
       const tempToken = localStorage.getItem("tempToken");
 
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/verify-2fa",
+      const response = await axiosInstance.post(
+        "/auth/verify-2fa",
         { code },
         {
           headers: {

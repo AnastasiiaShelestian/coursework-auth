@@ -51,14 +51,12 @@ router.post("/login", async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Неверный пароль" });
     }
-
-    // Если включена двухфакторная аутентификация
+    //Временный токин
     if (user.twoFactorEnabled) {
-      // Генерируем временный токен без пометки двухфакторной авторизации
       const tempToken = jwt.sign(
         { id: user._id, email: user.email },
         process.env.JWT_SECRET,
-        { expiresIn: "5m" } // временный токен, короткий срок
+        { expiresIn: "5m" }
       );
 
       return res.json({
@@ -73,8 +71,7 @@ router.post("/login", async (req, res) => {
         },
       });
     }
-
-    // Если 2FA отключена — обычный токен
+    //постоянный токин
     const token = jwt.sign(
       { id: user._id, email: user.email, twoFactorAuthenticated: true },
       process.env.JWT_SECRET,
@@ -171,6 +168,7 @@ router.get("/generate-2fa", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Ошибка сервера", error });
   }
 });
+
 router.post("/verify-2fa", verifyToken, async (req, res) => {
   const { code } = req.body;
 

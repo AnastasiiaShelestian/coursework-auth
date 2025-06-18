@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
-  // Проверка: передан ли заголовок Authorization
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Нет токена, доступ запрещён" });
   }
@@ -12,7 +11,7 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // Добавим пользователя в req
+    req.user = decoded;
     next();
   } catch (error) {
     return res.status(401).json({ message: "Недействительный токен" });

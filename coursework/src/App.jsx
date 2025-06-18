@@ -1,8 +1,8 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Login from "./components/Login";
-import Registration from "./components/Registration";
-import Profile from "./components/Profile";
+import Login from "./pages/Login";
+import Registration from "./pages/Registration";
+import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import GoogleSuccess from "./components/GoogleSuccess";
 import GitHubSuccess from "./components/GitHubSuccess";

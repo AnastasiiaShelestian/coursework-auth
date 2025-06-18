@@ -1,7 +1,35 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const GitHubStrategy = require("passport-github2").Strategy;
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+
+const findOrCreateOAuthUser = async ({
+  name,
+  email,
+  isGoogle = false,
+  isGitHub = false,
+}) => {
+  let user = await User.findOne({ email });
+  if (!user) {
+    user = await User.create({
+      name,
+      email,
+      password: "",
+      google: isGoogle,
+      github: isGitHub,
+    });
+  }
+  return user;
+};
+
+const generateToken = (user) => {
+  return jwt.sign(
+    { userId: user._id, email: user.email, name: user.name },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
+};
 
 passport.use(
   new GoogleStrategy(
@@ -13,36 +41,20 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile.emails[0].value;
-        let user = await User.findOne({ email });
-
-        if (!user) {
-          user = await User.create({
-            name: profile.displayName,
-            email,
-            password: "",
-            google: true,
-          });
-        }
-
-        const token = jwt.sign(
-          { userId: user._id, email: user.email, name: user.name },
-          process.env.JWT_SECRET,
-          { expiresIn: "1h" }
-        );
-
-        return done(null, { token, user });
+        const name = profile.displayName;
+        const user = await findOrCreateOAuthUser({
+          name,
+          email,
+          isGoogle: true,
+        });
+        const token = generateToken(user);
+        done(null, { token, user });
       } catch (error) {
-        return done(error, null);
+        done(error, null);
       }
     }
   )
 );
-
-passport.deserializeUser((data, done) => {
-  done(null, data);
-});
-
-const GitHubStrategy = require("passport-github2").Strategy;
 
 passport.use(
   new GitHubStrategy(
@@ -55,30 +67,16 @@ passport.use(
       try {
         const email =
           profile.emails?.[0]?.value || `${profile.username}@github.com`;
-        let user = await User.findOne({ email });
-
-        if (!user) {
-          user = await User.create({
-            name: profile.displayName || profile.username,
-            email,
-            password: "",
-            github: true,
-          });
-        }
-
-        const token = jwt.sign(
-          {
-            userId: user._id,
-            email: user.email,
-            name: user.name,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: "1h" }
-        );
-
+        const name = profile.displayName || profile.username;
+        const user = await findOrCreateOAuthUser({
+          name,
+          email,
+          isGitHub: true,
+        });
+        const token = generateToken(user);
         done(null, { token, user });
-      } catch (err) {
-        done(err, null);
+      } catch (error) {
+        done(error, null);
       }
     }
   )

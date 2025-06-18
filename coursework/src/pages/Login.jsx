@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import React, { useState } from "react";
 import {
   Button,
@@ -21,23 +21,23 @@ function Login() {
     e.preventDefault();
     setError("");
 
+    if (!email || !password) {
+      setError("Пожалуйста, заполните все поля");
+      return;
+    }
+
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        {
-          email,
-          password,
-        }
-      );
+      const response = await axiosInstance.post("/auth/login", {
+        email,
+        password,
+      });
 
       const { token, user, twoFactor } = response.data;
 
       if (twoFactor) {
-        // Сохраняем временный токен, переход на верификацию 2FA
         localStorage.setItem("tempToken", token);
         navigate("/verify-2fa");
       } else {
-        // Обычный вход
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
         navigate("/profile");
@@ -46,6 +46,19 @@ function Login() {
       console.error(err);
       setError(err.response?.data?.message || "Неверный email или пароль");
     }
+  };
+
+  const socialIconStyle = {
+    width: "50px",
+    height: "auto",
+    cursor: "pointer",
+    borderRadius: "6px",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.12)",
+    transition: "transform 0.2s ease",
+  };
+
+  const handleHover = (e, scale) => {
+    e.currentTarget.style.transform = `scale(${scale})`;
   };
 
   return (
@@ -143,20 +156,9 @@ function Login() {
                 <img
                   src="/images/Google.png"
                   alt="Войти через Google"
-                  style={{
-                    width: "50px",
-                    height: "auto",
-                    cursor: "pointer",
-                    borderRadius: "6px",
-                    boxShadow: "0 2px 5px rgba(0,0,0,0.12)",
-                    transition: "transform 0.2s ease",
-                  }}
-                  onMouseOver={(e) =>
-                    (e.currentTarget.style.transform = "scale(1.05)")
-                  }
-                  onMouseOut={(e) =>
-                    (e.currentTarget.style.transform = "scale(1)")
-                  }
+                  style={socialIconStyle}
+                  onMouseOver={(e) => handleHover(e, 1.05)}
+                  onMouseOut={(e) => handleHover(e, 1)}
                 />
               </a>
 
@@ -164,20 +166,9 @@ function Login() {
                 <img
                   src="/images/GitHub.png"
                   alt="Войти через GitHub"
-                  style={{
-                    width: "50px",
-                    height: "auto",
-                    cursor: "pointer",
-                    borderRadius: "6px",
-                    boxShadow: "0 2px 5px rgba(0,0,0,0.12)",
-                    transition: "transform 0.2s ease",
-                  }}
-                  onMouseOver={(e) =>
-                    (e.currentTarget.style.transform = "scale(1.05)")
-                  }
-                  onMouseOut={(e) =>
-                    (e.currentTarget.style.transform = "scale(1)")
-                  }
+                  style={socialIconStyle}
+                  onMouseOver={(e) => handleHover(e, 1.05)}
+                  onMouseOut={(e) => handleHover(e, 1)}
                 />
               </a>
             </Box>

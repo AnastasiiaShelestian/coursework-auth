@@ -12,9 +12,8 @@ module.exports = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Убедимся, что в req.user будет и id, и email (требуется для /generate-2fa)
     req.user = {
-      id: decoded.id || decoded.userId, // fallback для 2FA-подтверждённого токена
+      id: decoded.id || decoded.userId,
       email: decoded.email,
       twoFactorAuthenticated: decoded.twoFactorAuthenticated || false,
     };
